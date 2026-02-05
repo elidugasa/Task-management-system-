@@ -24,17 +24,14 @@ import ManagerLayout from './Component/projectmanager/PromanagerLayout';
 import Projects from './pages/projectmanager/Projects';
 import CreateProject from './pages/projectmanager/CreateProject';
 import ProjectDetails from './pages/projectmanager/ProjectDetails';
-import Tasks from './pages/projectmanager/Tasks';
-import Reportpm from './pages/projectmanager/Reports';
-import CreateTask from './pages/projectmanager/CreateTask';
+import Tasks from './pages/projectManager/Tasks';
+import Reportpm from './pages/projectManager/Reports';
+import CreateTask from './pages/projectManager/CreateTask';
+import EditTask from './pages/projectManager/EditTask';
 import TaskDetails from './pages/projectManager/TaskDetails';
-import Progress from './pages/projectmanager/Progress';
-// import TeamMemberDashboard from './pages/TeamMemberDashboard/Dashboard';
+import Progress from './pages/projectManager/Progress';
+import Settings from './pages/projectManager/settings';
 
-// import ProjectManagerDashboard from './pages/projectmanager/ProjectManagerDashboard';
-// import TeamMemberDashboard from './pages/TeamMemberDashboard/Dashboard';
-
-// src/App.jsx
 export default function App(){
   return(
     <Routes>
@@ -57,19 +54,20 @@ export default function App(){
       </Route>
             <Route path="/project-manager" element={<Navigate to="/manager/dashboard" replace />} />
        {/* Project Manager Routes */}
-        <Route path="/manager/*" element={<ManagerLayout />}>
-          <Route path="dashboard" element={<ProjectManagerDashboard />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="projects/create" element={<CreateProject />} />
-          <Route path="manager/tasks/edit/:id" element={<CreateTask />} /> 
-          <Route path="projects/:id" element={<ProjectDetails />} />
-          <Route path="tasks" element={<Tasks />} />
-          <Route path="tasks/create" element={<CreateTask />} />
-          <Route path="tasks/:id" element={<TaskDetails />} />
-          <Route path="progress" element={<Progress />} />
-          <Route path="reports" element={<Reportpm />} />
-          <Route index element={<Navigate to="/manager/dashboard" replace />} />
-        </Route>
+       <Route path="/manager" element={<ManagerLayout />}>
+  <Route index element={<Navigate to="dashboard" replace />} />
+  <Route path="dashboard" element={<ProjectManagerDashboard />} />
+  <Route path="projects" element={<Projects />} />
+  <Route path="projects/create" element={<CreateProject />} />
+  <Route path="projects/:id" element={<ProjectDetails />} />
+  <Route path="tasks" element={<Tasks />} />
+  <Route path="tasks/create" element={<CreateTask />} />
+  <Route path="tasks/edit/:id" element={<EditTask />} /> {/* Add this line */}
+  <Route path="tasks/:id" element={<TaskDetails />} />
+  <Route path="progress" element={<Progress />} />
+  <Route path="reports" element={<Reportpm />} />
+  <Route path="settings" element={<Settings />} />
+</Route>
     </Routes>
   )
 }

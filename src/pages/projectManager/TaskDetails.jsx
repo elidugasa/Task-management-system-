@@ -121,13 +121,13 @@ useEffect(() => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Tasks
         </button>
-        <button 
-          onClick={() => navigate(`/manager/tasks/edit/${id}`)}
-          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit Task
-        </button>
+       <button 
+  onClick={() => navigate(`/manager/tasks/edit/${id}`)}
+  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
+>
+  <Edit className="w-4 h-4 mr-2" />
+  Edit Task
+</button>
       </div>
 
       {/* Task Info */}
