@@ -1,14 +1,15 @@
-// src/layouts/ManagerLayout.jsx
-import React from 'react';
+// src/Component/projectmanager/PromanagerLayout.jsx (or ManagerLayout.jsx)
+import React, { useState } from 'react'; // Added useState
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, FolderKanban, CheckSquare, 
   TrendingUp, FileText, Settings, LogOut,
-  Bell, HelpCircle, Search
+  Bell, HelpCircle, Search, X // Added X icon
 } from 'lucide-react';
 
 const ManagerLayout = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState(''); // State for search input
 
   const navItems = [
     { path: '/manager/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard' },
@@ -18,6 +19,31 @@ const ManagerLayout = () => {
     { path: '/manager/reports', icon: <FileText className="w-5 h-5" />, label: 'Reports' },
     { path: '/manager/settings', icon: <Settings className="w-5 h-5" />, label: 'Settings' },
   ];
+
+  // Handle search submission
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Navigate to search results page or filter current page
+      // For now, let's just log it and show an alert
+      console.log('Searching for:', searchQuery);
+      
+      // You can implement different search behaviors:
+      // Option 1: Navigate to filtered projects page
+      navigate(`/manager/projects?search=${encodeURIComponent(searchQuery)}`);
+      
+      // Option 2: Filter current page (if on projects/tasks page)
+      // This would require passing the search query to child components
+      
+      // Option 3: Show search results in a modal
+      // alert(`Search results for: ${searchQuery}`);
+    }
+  };
+
+  // Clear search input
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -72,19 +98,32 @@ const ManagerLayout = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
+        {/* Top Header with Working Search */}
         <header className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex-1 max-w-xl">
+            <form onSubmit={handleSearch} className="flex-1 max-w-xl">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search projects, tasks, or team members..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search projects"
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#4DA5AD] focus:border-transparent"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
-            </div>
+              {/* Hidden submit button for form submission on Enter */}
+              <button type="submit" className="hidden">Search</button>
+            </form>
             
             <div className="flex items-center space-x-4">
               <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg">

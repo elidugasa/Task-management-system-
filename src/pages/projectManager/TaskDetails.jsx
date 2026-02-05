@@ -1,38 +1,113 @@
-// src/pages/manager/TaskDetails.jsx
-import React, { useState } from 'react';
+// src/components/projectManager/TaskDetails.jsx
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Clock, User, FileText, MessageSquare, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Clock, User, MessageSquare, FolderKanban } from 'lucide-react';
 
 const TaskDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  const [task, setTask] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
 
-  const [task, setTask] = useState({
-    id: id,
-    title: 'Fix login authentication bug',
-    description: 'Fix the authentication bug in the login flow that occurs when users try to login with incorrect credentials multiple times.',
-    project: 'Mobile App v2',
-    assignee: 'John Doe',
-    priority: 'high',
-    deadline: '2024-03-15',
-    progress: 80,
-    status: 'in-progress',
-    estimatedHours: 8,
-    actualHours: 6,
-    createdAt: '2024-02-20'
-  });
+  // Helper function to get project manager based on project
+  const getProjectManager = (project) => {
+    const projectManagers = {
+      'Mobile App v2': 'Alex Johnson',
+      'Website Redesign': 'Sarah Miller', 
+      'API Migration': 'David Chen',
+      'Payment Integration': 'Maria Garcia',
+      'Default': 'Project Manager'
+    };
+    
+    return projectManagers[project] || projectManagers['Default'];
+  };
 
-  const [comments, setComments] = useState([
-    { id: 1, user: 'John Doe', text: 'Working on the bug fix', time: '2 hours ago' },
-    { id: 2, user: 'Jane Smith', text: 'Please update the progress once completed', time: '1 hour ago' },
-  ]);
+  // Update the useEffect in TaskDetails.jsx:
+
+useEffect(() => {
+  // Load tasks from localStorage
+  const savedTasks = localStorage.getItem('managerTasks');
+  const tasks = savedTasks ? JSON.parse(savedTasks) : [];
+  const foundTask = tasks.find(t => t.id === parseInt(id));
+  
+  if (foundTask) {
+    setTask(foundTask);
+    
+    // Create comments - YOU are the project manager
+    const taskComments = [
+      { 
+        id: 1, 
+        user: foundTask.assignee || 'Team Member', // Shows actual assignee
+        text: 'Working on the bug fix', 
+        time: '2 hours ago' 
+      },
+      { 
+        id: 2, 
+        user: 'You', // YOU are the project manager
+        text: 'Please update the progress once completed', 
+        time: '1 hour ago' 
+      },
+    ];
+    setComments(taskComments);
+  } else {
+    navigate('/manager/tasks');
+  }
+}, [id, navigate]);
 
   const updateProgress = (newProgress) => {
-    setTask(prev => ({
-      ...prev,
+    if (!task) return;
+    
+    const updatedTask = {
+      ...task,
       progress: newProgress,
       status: newProgress === 100 ? 'completed' : 'in-progress'
-    }));
+    };
+    
+    setTask(updatedTask);
+    
+    // Update in localStorage to match Tasks.jsx
+    const savedTasks = localStorage.getItem('managerTasks');
+    const tasks = savedTasks ? JSON.parse(savedTasks) : [];
+    const taskIndex = tasks.findIndex(t => t.id === parseInt(id));
+    if (taskIndex !== -1) {
+      tasks[taskIndex] = updatedTask;
+      localStorage.setItem('managerTasks', JSON.stringify(tasks));
+    }
+  };
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    
+    const newCommentObj = {
+      id: comments.length + 1,
+      user: 'You', // This stays as "You"
+      text: newComment,
+      time: 'Just now'
+    };
+    
+    setComments([newCommentObj, ...comments]);
+    setNewComment('');
+  };
+
+  if (!task) {
+    return (
+      <div className="p-6 flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading task details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-green-100 text-green-800';
+    }
   };
 
   return (
@@ -46,7 +121,10 @@ const TaskDetails = () => {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Tasks
         </button>
-        <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center">
+        <button 
+          onClick={() => navigate(`/manager/tasks/edit/${id}`)}
+          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
+        >
           <Edit className="w-4 h-4 mr-2" />
           Edit Task
         </button>
@@ -57,13 +135,9 @@ const TaskDetails = () => {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{task.title}</h1>
-            <p className="text-gray-600 mt-2">{task.description}</p>
+            <p className="text-gray-600 mt-2">{task.description || 'No description provided.'}</p>
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            task.priority === 'high' ? 'bg-red-100 text-red-800' :
-            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-            'bg-green-100 text-green-800'
-          }`}>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(task.priority)}`}>
             {task.priority} priority
           </span>
         </div>
@@ -82,6 +156,7 @@ const TaskDetails = () => {
               <FolderKanban className="w-4 h-4 mr-2" />
               Project
             </div>
+            {/* FIXED: Changed from task.projectName to task.project */}
             <div className="font-medium text-gray-900">{task.project}</div>
           </div>
           
@@ -98,7 +173,7 @@ const TaskDetails = () => {
               <Clock className="w-4 h-4 mr-2" />
               Time Spent
             </div>
-            <div className="font-medium text-gray-900">{task.actualHours}/{task.estimatedHours} hrs</div>
+            <div className="font-medium text-gray-900">{task.actualHours || 0}/{task.estimatedHours || 0} hrs</div>
           </div>
         </div>
 
@@ -139,21 +214,43 @@ const TaskDetails = () => {
         </div>
       </div>
 
+      {/* Tags */}
+      {task.tags && task.tags.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <h3 className="font-medium text-gray-900 mb-3">Tags</h3>
+          <div className="flex flex-wrap gap-2">
+            {task.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Comments */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
           <MessageSquare className="w-5 h-5 mr-2" />
-          Comments
+          Comments ({comments.length})
         </h2>
         
         <div className="space-y-4 mb-6">
           {comments.map(comment => (
             <div key={comment.id} className="border-l-4 border-[#4DA5AD] pl-4 py-2">
               <div className="flex justify-between items-center mb-1">
-                <span className="font-medium text-gray-900">{comment.user}</span>
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-900">{comment.user}</span>
+                  {comment.user === 'You' && (
+                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded">You</span>
+                  )}
+                </div>
                 <span className="text-sm text-gray-500">{comment.time}</span>
               </div>
-              <p className="text-gray-700">{comment.text}</p>
+              <p className="text-gray-700 mt-1">{comment.text}</p>
             </div>
           ))}
         </div>
@@ -161,10 +258,16 @@ const TaskDetails = () => {
         <div className="flex">
           <input
             type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
             placeholder="Add a comment..."
-            className="flex-1 border border-gray-300 rounded-l-lg px-4 py-2"
+            className="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#4DA5AD] focus:border-transparent"
           />
-          <button className="px-4 py-2 bg-[#4DA5AD] text-white rounded-r-lg hover:bg-[#3D8B93]">
+          <button 
+            onClick={handleAddComment}
+            className="px-4 py-2 bg-[#4DA5AD] text-white rounded-r-lg hover:bg-[#3D8B93] transition-colors"
+          >
             Post
           </button>
         </div>

@@ -1,97 +1,49 @@
-// src/pages/manager/ProjectManagerDashboard.jsx
-import React, { useState } from 'react';
+// src/components/projectManager/ProjectManagerDashboard.jsx
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   FolderKanban, CheckSquare, Clock, AlertCircle, 
   Users, Calendar, TrendingUp, Plus,
-  FileText, Download, ChevronRight, Activity,  // Added ChevronRight
-  MoreVertical, Edit, Trash2
+  FileText, Download, ChevronRight, Activity,
+  MoreVertical, Edit, Trash2, ArrowRight
 } from 'lucide-react';
+import EnhancedDataService from '../../services/enhencedDataservices';
+import DataService from '../../services/dataservices';
 
 const ProjectManagerDashboard = () => {
   const navigate = useNavigate();
 
-  // Stats data
-  const [stats, setStats] = useState({
-    totalProjects: 8,
-    totalTasks: 142,
-    completedTasks: 89,
-    overdueTasks: 12,
-    activeTeamMembers: 24,
-    upcomingDeadlines: 7
-  });
-
-  // Recent projects
-  const [recentProjects, setRecentProjects] = useState([
-    { 
-      id: 1, 
-      name: 'Mobile App v2', 
-      progress: 75, 
-      status: 'active', 
-      dueDate: '2024-06-15',
-      tasks: { total: 24, completed: 18, overdue: 2 },
-      team: ['John', 'Jane', 'Mike']
-    },
-    { 
-      id: 2, 
-      name: 'Website Redesign', 
-      progress: 45, 
-      status: 'active', 
-      dueDate: '2024-07-30',
-      tasks: { total: 18, completed: 8, overdue: 1 },
-      team: ['Alice', 'Tom']
-    },
-    { 
-      id: 3, 
-      name: 'API Migration', 
-      progress: 90, 
-      status: 'completed', 
-      dueDate: '2024-03-01',
-      tasks: { total: 32, completed: 32, overdue: 0 },
-      team: ['Bob', 'Sarah']
-    },
-  ]);
+  // Get data from services
+  const stats = EnhancedDataService.getDashboardStats();
+  const teamPerformance = EnhancedDataService.getTeamPerformanceAnalytics();
+  const projectTimeline = EnhancedDataService.getProjectTimelineData().slice(0, 3);
+  const memberWorkload = EnhancedDataService.getMemberWorkload().slice(0, 5);
 
   // Recent tasks
-  const [recentTasks, setRecentTasks] = useState([
-    { 
-      id: 1, 
-      title: 'Fix login authentication bug', 
-      project: 'Mobile App v2', 
-      assignee: 'John Doe',
-      dueDate: 'Today',
-      progress: 80,
-      priority: 'high',
-      status: 'in-progress'
-    },
-    { 
-      id: 2, 
-      title: 'Design homepage mockups', 
-      project: 'Website Redesign', 
-      assignee: 'Jane Smith',
-      dueDate: 'Tomorrow',
-      progress: 60,
-      priority: 'medium',
-      status: 'in-progress'
-    },
-    { 
-      id: 3, 
-      title: 'API documentation overdue', 
-      project: 'API Migration', 
-      assignee: 'Mike Wilson',
-      dueDate: 'Yesterday',
-      progress: 0,
-      priority: 'high',
-      status: 'overdue'
-    },
-  ]);
+  const recentTasks = DataService.getTasks().slice(0, 3);
 
   // Quick actions
   const quickActions = [
-    { title: 'Create New Project', icon: <Plus className="w-5 h-5" />, onClick: () => navigate('/manager/projects/create') },
-    { title: 'Assign Task', icon: <CheckSquare className="w-5 h-5" />, onClick: () => navigate('/manager/tasks/create') },
-    { title: 'View Progress', icon: <Activity className="w-5 h-5" />, onClick: () => navigate('/manager/progress') },
-    { title: 'Generate Report', icon: <FileText className="w-5 h-5" />, onClick: () => navigate('/manager/reports') },
+    { 
+      title: 'Create New Project', 
+      icon: <Plus className="w-5 h-5" />, 
+      onClick: () => navigate('/manager/projects/create') 
+    },
+    { 
+      title: 'Assign Task', 
+      icon: <CheckSquare className="w-5 h-5" />, 
+      onClick: () => navigate('/manager/tasks/create') 
+    },
+    { 
+      title: 'View Progress', 
+      icon: <Activity className="w-5 h-5" />, 
+      onClick: () => navigate('/manager/progress') 
+    },
+    { 
+      title: 'Generate Report', 
+      icon: <FileText className="w-5 h-5" />, 
+      onClick: () => navigate('/manager/reports') 
+    },
   ];
 
   // Stats cards data
@@ -99,32 +51,48 @@ const ProjectManagerDashboard = () => {
     { 
       title: 'Total Projects', 
       value: stats.totalProjects, 
-      change: '+2 this month', 
+      change: `${stats.activeProjects} active`, 
       icon: <FolderKanban className="w-6 h-6" />,
       color: 'bg-blue-100 text-blue-600'
     },
     { 
       title: 'Total Tasks', 
       value: stats.totalTasks, 
-      change: '42 active', 
+      change: `${stats.completedTasks} completed`, 
       icon: <CheckSquare className="w-6 h-6" />,
       color: 'bg-green-100 text-green-600'
     },
     { 
-      title: 'Completed Tasks', 
-      value: stats.completedTasks, 
-      change: '+15% from last month', 
+      title: 'Avg. Progress', 
+      value: `${stats.overallProgress}%`, 
+      change: 'Across all projects', 
       icon: <TrendingUp className="w-6 h-6" />,
       color: 'bg-purple-100 text-purple-600'
     },
     { 
-      title: 'Overdue Tasks', 
-      value: stats.overdueTasks, 
-      change: 'Needs attention', 
+      title: 'Upcoming Deadlines', 
+      value: stats.upcomingDeadlines, 
+      change: 'Within 7 days', 
       icon: <AlertCircle className="w-6 h-6" />,
       color: 'bg-red-100 text-red-600'
     },
   ];
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-green-100 text-green-800';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -137,7 +105,7 @@ const ProjectManagerDashboard = () => {
         <div className="flex items-center space-x-4">
           <div className="flex items-center text-sm text-gray-600">
             <Users className="w-4 h-4 mr-2" />
-            <span>Team: {stats.activeTeamMembers} members</span>
+            <span>Team: {stats.totalTeamMembers} members</span>
           </div>
           <button 
             onClick={() => navigate('/manager/projects/create')}
@@ -194,7 +162,7 @@ const ProjectManagerDashboard = () => {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-bold text-gray-900">Project Progress</h2>
+              <h2 className="text-lg font-bold text-gray-900">Active Projects</h2>
               <button 
                 onClick={() => navigate('/manager/projects')}
                 className="text-sm text-[#4DA5AD] hover:underline flex items-center"
@@ -204,7 +172,7 @@ const ProjectManagerDashboard = () => {
             </div>
             
             <div className="space-y-4">
-              {recentProjects.map(project => (
+              {projectTimeline.map((project) => (
                 <div 
                   key={project.id} 
                   className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition cursor-pointer"
@@ -214,18 +182,11 @@ const ProjectManagerDashboard = () => {
                     <div>
                       <h3 className="font-medium text-gray-900">{project.name}</h3>
                       <div className="flex items-center text-sm text-gray-500 mt-1">
-                        <Users className="w-3 h-3 mr-1" />
-                        <span>{project.team.length} members</span>
-                        <span className="mx-2">•</span>
                         <Calendar className="w-3 h-3 mr-1" />
-                        <span>Due: {project.dueDate}</span>
+                        <span>Due in {project.daysRemaining} days</span>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      project.status === 'active' ? 'bg-green-100 text-green-800' :
-                      project.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(project.status)}`}>
                       {project.status}
                     </span>
                   </div>
@@ -241,13 +202,6 @@ const ProjectManagerDashboard = () => {
                         style={{ width: `${project.progress}%` }}
                       ></div>
                     </div>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>Tasks: {project.tasks.completed}/{project.tasks.total} completed</span>
-                    {project.tasks.overdue > 0 && (
-                      <span className="text-red-500">{project.tasks.overdue} overdue</span>
-                    )}
                   </div>
                 </div>
               ))}
@@ -273,18 +227,14 @@ const ProjectManagerDashboard = () => {
             <div 
               key={task.id} 
               className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition cursor-pointer"
-              onClick={() => navigate(`/manager/tasks/${task.id}`)}
+              onClick={() => navigate(`/manager/tasks/${task.id}`, { state: { task } })}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{task.title}</h3>
-                  <p className="text-sm text-gray-500">{task.project} • {task.assignee}</p>
+                  <p className="text-sm text-gray-500">{task.projectName} • {task.assignee}</p>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs ${
-                  task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                  task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
-                }`}>
+                <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(task.priority)}`}>
                   {task.priority}
                 </span>
               </div>
@@ -292,7 +242,7 @@ const ProjectManagerDashboard = () => {
               <div className="flex justify-between items-center mt-3">
                 <div className="flex items-center text-sm text-gray-500">
                   <Clock className="w-3 h-3 mr-1" />
-                  <span>{task.dueDate}</span>
+                  <span>Due: {task.deadline}</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-20 bg-gray-200 rounded-full h-1.5 mr-2">

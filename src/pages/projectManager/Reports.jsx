@@ -1,6 +1,7 @@
-// src/pages/manager/Reports.jsx - MONITOR Reports
+// src/components/projectManager/Reports.jsx
 import React, { useState } from 'react';
-import { FileText, Download, Printer, Calendar, Filter } from 'lucide-react';
+import { FileText, Download, Printer, Calendar, Filter, BarChart3, PieChart, TrendingUp } from 'lucide-react';
+import EnhancedDataService from '../../services/enhencedDataservices';
 
 const Reports = () => {
   const [selectedReport, setSelectedReport] = useState('progress');
@@ -14,61 +15,93 @@ const Reports = () => {
       id: 'progress',
       name: 'Project Progress Report',
       description: 'Detailed progress of all projects',
-      icon: <FileText className="w-6 h-6" />,
-      metrics: [
-        { label: 'Total Projects', value: '8' },
-        { label: 'Avg. Progress', value: '67.5%' },
-        { label: 'Completed Projects', value: '2' },
-        { label: 'Active Projects', value: '6' },
-      ]
+      icon: <BarChart3 className="w-6 h-6" />,
+      getMetrics: () => {
+        const stats = EnhancedDataService.getDashboardStats();
+        return [
+          { label: 'Total Projects', value: stats.totalProjects },
+          { label: 'Active Projects', value: stats.activeProjects },
+          { label: 'Completed Projects', value: stats.completedProjects },
+          { label: 'Overall Progress', value: `${stats.overallProgress}%` },
+        ];
+      }
     },
     {
       id: 'tasks',
       name: 'Task Completion Report',
       description: 'Task completion rates and performance',
       icon: <FileText className="w-6 h-6" />,
-      metrics: [
-        { label: 'Total Tasks', value: '142' },
-        { label: 'Completed Tasks', value: '89' },
-        { label: 'Overdue Tasks', value: '12' },
-        { label: 'Completion Rate', value: '62.7%' },
-      ]
+      getMetrics: () => {
+        const stats = EnhancedDataService.getDashboardStats();
+        return [
+          { label: 'Total Tasks', value: stats.totalTasks },
+          { label: 'Completed Tasks', value: stats.completedTasks },
+          { label: 'Completion Rate', value: `${Math.round((stats.completedTasks / stats.totalTasks) * 100) || 0}%` },
+          { label: 'Upcoming Deadlines', value: stats.upcomingDeadlines },
+        ];
+      }
     },
     {
       id: 'workload',
       name: 'Team Workload Report',
       description: 'Team member workload and distribution',
-      icon: <FileText className="w-6 h-6" />,
-      metrics: [
-        { label: 'Team Members', value: '24' },
-        { label: 'Avg Tasks/Member', value: '5.9' },
-        { label: 'Max Workload', value: '12 tasks' },
-        { label: 'Min Workload', value: '2 tasks' },
-      ]
+      icon: <PieChart className="w-6 h-6" />,
+      getMetrics: () => {
+        const teamPerformance = EnhancedDataService.getTeamPerformanceAnalytics();
+        const totalTeams = teamPerformance.length;
+        const avgPerformance = Math.round(teamPerformance.reduce((sum, team) => sum + team.performance, 0) / totalTeams);
+        
+        return [
+          { label: 'Total Teams', value: totalTeams },
+          { label: 'Avg Team Performance', value: `${avgPerformance}%` },
+          { label: 'Total Team Members', value: teamPerformance.reduce((sum, team) => sum + team.memberCount, 0) },
+          { label: 'Active Projects', value: teamPerformance.reduce((sum, team) => sum + team.activeProjects, 0) },
+        ];
+      }
+    },
+    {
+      id: 'budget',
+      name: 'Budget Utilization Report',
+      description: 'Project budget tracking and spending',
+      icon: <TrendingUp className="w-6 h-6" />,
+      getMetrics: () => {
+        const budgetAnalytics = EnhancedDataService.getBudgetAnalytics();
+        return [
+          { label: 'Total Budget', value: `$${budgetAnalytics.totalBudget.toLocaleString()}` },
+          { label: 'Total Spent', value: `$${budgetAnalytics.totalSpent.toLocaleString()}` },
+          { label: 'Remaining Budget', value: `$${budgetAnalytics.remainingBudget.toLocaleString()}` },
+          { label: 'Avg Utilization', value: `${Math.round((budgetAnalytics.totalSpent / budgetAnalytics.totalBudget) * 100) || 0}%` },
+        ];
+      }
     }
   ];
 
   const currentReport = reports.find(r => r.id === selectedReport);
+  const metrics = currentReport ? currentReport.getMetrics() : [];
 
   const handleDownload = (format) => {
     alert(`Downloading ${currentReport.name} as ${format}...`);
     // In real app: Generate and download report
   };
 
+  const generateReport = () => {
+    alert(`${currentReport.name} generated for ${dateRange.start} to ${dateRange.end}`);
+    // In real app: Generate report with data
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
           <p className="text-gray-600">Generate and download project reports</p>
         </div>
         <div className="flex space-x-3">
-          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center">
-            <Printer className="w-4 h-4 mr-2" />
-            Print
-          </button>
-          <button className="px-4 py-2 bg-[#4DA5AD] text-white rounded-lg hover:bg-[#3D8B93] flex items-center">
-            <Download className="w-4 h-4 mr-2" />
+          <button 
+            onClick={generateReport}
+            className="px-4 py-2 bg-[#4DA5AD] text-white rounded-lg hover:bg-[#3D8B93] flex items-center"
+          >
+            <FileText className="w-4 h-4 mr-2" />
             Generate Report
           </button>
         </div>
@@ -141,7 +174,7 @@ const Reports = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{currentReport.name}</h2>
+                <h2 className="text-xl font-bold text-gray-900">{currentReport?.name}</h2>
                 <p className="text-gray-600">Generated: {new Date().toLocaleDateString()}</p>
               </div>
               <div className="flex space-x-2">
@@ -149,8 +182,9 @@ const Reports = () => {
                   <button
                     key={format}
                     onClick={() => handleDownload(format)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
                   >
+                    <Download className="w-4 h-4 mr-1" />
                     {format}
                   </button>
                 ))}
@@ -161,7 +195,7 @@ const Reports = () => {
             <div className="space-y-6">
               {/* Metrics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {currentReport.metrics.map((metric, index) => (
+                {metrics.map((metric, index) => (
                   <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
                     <div className="text-sm text-gray-600">{metric.label}</div>
@@ -174,9 +208,11 @@ const Reports = () => {
                 <h3 className="font-bold text-gray-900 mb-3">Report Summary</h3>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-gray-700">
-                    This report covers the period from {dateRange.start} to {dateRange.end}. 
-                    It provides insights into project performance, task completion rates, 
-                    and team workload distribution for better resource planning and management.
+                    This {currentReport?.name.toLowerCase()} covers the period from {dateRange.start} to {dateRange.end}. 
+                    {selectedReport === 'progress' && ' It provides detailed insights into project progress, completion rates, and overall performance.'}
+                    {selectedReport === 'tasks' && ' It analyzes task completion rates, identifies bottlenecks, and tracks team performance on individual tasks.'}
+                    {selectedReport === 'workload' && ' It examines team member workload distribution, identifies resource allocation issues, and suggests optimal resource planning.'}
+                    {selectedReport === 'budget' && ' It tracks budget utilization across projects, identifies overspending patterns, and provides cost optimization recommendations.'}
                   </p>
                 </div>
               </div>
@@ -185,37 +221,71 @@ const Reports = () => {
               <div>
                 <h3 className="font-bold text-gray-900 mb-3">Key Findings</h3>
                 <ul className="space-y-2">
-                  <li className="flex items-start">
-                    <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      ✓
-                    </div>
-                    <span className="text-gray-700">Project completion rates have improved by 15% compared to last quarter</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="bg-yellow-100 text-yellow-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      !
-                    </div>
-                    <span className="text-gray-700">12 tasks are currently overdue and require immediate attention</span>
-                  </li>
-                  <li className="flex items-start">
-                    <div className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                      ⚡
-                    </div>
-                    <span className="text-gray-700">Team efficiency is at 87%, showing consistent performance</span>
-                  </li>
+                  {selectedReport === 'progress' && (
+                    <>
+                      <li className="flex items-start">
+                        <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ✓
+                        </div>
+                        <span className="text-gray-700">Project completion rates have improved by 15% compared to last quarter</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="bg-yellow-100 text-yellow-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          !
+                        </div>
+                        <span className="text-gray-700">2 projects are behind schedule and require attention</span>
+                      </li>
+                    </>
+                  )}
+                  {selectedReport === 'tasks' && (
+                    <>
+                      <li className="flex items-start">
+                        <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ✓
+                        </div>
+                        <span className="text-gray-700">Task completion rate is at 87%, showing good progress</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="bg-red-100 text-red-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ⚠
+                        </div>
+                        <span className="text-gray-700">12 tasks are overdue and require immediate attention</span>
+                      </li>
+                    </>
+                  )}
+                  {selectedReport === 'workload' && (
+                    <>
+                      <li className="flex items-start">
+                        <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ✓
+                        </div>
+                        <span className="text-gray-700">Workload distribution is balanced across most teams</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ⚡
+                        </div>
+                        <span className="text-gray-700">Engineering team shows highest efficiency at 94%</span>
+                      </li>
+                    </>
+                  )}
+                  {selectedReport === 'budget' && (
+                    <>
+                      <li className="flex items-start">
+                        <div className="bg-green-100 text-green-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          ✓
+                        </div>
+                        <span className="text-gray-700">Overall budget utilization is within limits at 85%</span>
+                      </li>
+                      <li className="flex items-start">
+                        <div className="bg-yellow-100 text-yellow-800 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
+                          $
+                        </div>
+                        <span className="text-gray-700">Mobile App v2 project is 10% over budget</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
-              </div>
-
-              {/* Recommendations */}
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3">Recommendations</h3>
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <ul className="space-y-2">
-                    <li>Reallocate resources to address overdue tasks</li>
-                    <li>Consider adjusting deadlines for projects with less than 50% progress</li>
-                    <li>Schedule team training sessions to improve efficiency further</li>
-                  </ul>
-                </div>
               </div>
             </div>
           </div>

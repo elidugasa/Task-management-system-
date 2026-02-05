@@ -1,7 +1,9 @@
-// src/pages/manager/CreateProject.jsx - CREATE Project
+// src/components/projectManager/CreateProject.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Save } from 'lucide-react';
+import { X, Save, Users } from 'lucide-react';
+import DataService from '../../services/dataservices';
+import { teams } from '../../data/teams';
 
 const CreateProject = () => {
   const navigate = useNavigate();
@@ -11,38 +13,42 @@ const CreateProject = () => {
     startDate: '',
     deadline: '',
     status: 'not-started',
-    teamMembers: []
+    selectedTeam: '',
+    priority: 'medium',
+    budget: ''
   });
 
-  const teamMembers = [
-    { id: 1, name: 'John Doe', role: 'Frontend Developer' },
-    { id: 2, name: 'Jane Smith', role: 'UI Designer' },
-    { id: 3, name: 'Mike Wilson', role: 'Backend Developer' },
-    { id: 4, name: 'Alice Brown', role: 'QA Engineer' },
-    { id: 5, name: 'Bob Johnson', role: 'DevOps' },
-  ];
+  // Get existing teams
+  const [availableTeams] = useState(teams);
 
   const handleChange = (e) => {
-    setProject({
-      ...project,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const toggleTeamMember = (memberId) => {
+    const { name, value } = e.target;
     setProject(prev => ({
       ...prev,
-      teamMembers: prev.teamMembers.includes(memberId)
-        ? prev.teamMembers.filter(id => id !== memberId)
-        : [...prev.teamMembers, memberId]
+      [name]: value
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In real app, save to backend
-    alert('Project created successfully!');
-    navigate('/manager/projects');
+    
+    try {
+      // Use DataService to create project with team
+      const newProject = DataService.createProjectWithTeam({
+        name: project.name,
+        description: project.description,
+        startDate: project.startDate,
+        deadline: project.deadline,
+        status: 'active',
+        priority: project.priority,
+        budget: project.budget ? parseInt(project.budget) : 0
+      }, parseInt(project.selectedTeam));
+
+      alert(`Project created successfully! Assigned to ${newProject.teamName}`);
+      navigate('/manager/projects');
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    }
   };
 
   return (
@@ -50,7 +56,7 @@ const CreateProject = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Create New Project</h1>
-          <p className="text-gray-600">Fill in project details</p>
+          <p className="text-gray-600">Create project and assign to a team</p>
         </div>
         <button
           onClick={() => navigate('/manager/projects')}
@@ -124,60 +130,99 @@ const CreateProject = () => {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                name="status"
-                value={project.status}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              >
-                <option value="not-started">Not Started</option>
-                <option value="in-progress">In Progress</option>
-                <option value="on-hold">On Hold</option>
-                <option value="completed">Completed</option>
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  value={project.priority}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              {/* <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Budget ($)
+                </label>
+                <input
+                  type="number"
+                  name="budget"
+                  value={project.budget}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="Enter budget amount"
+                />
+              </div> */}
             </div>
           </div>
         </div>
 
         {/* Team Assignment */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Assign Team Members</h2>
-          <p className="text-sm text-gray-500 mb-4">Select team members for this project</p>
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <Users className="w-5 h-5 mr-2" />
+            Assign to Team
+          </h2>
           
-          <div className="space-y-3">
-            {teamMembers.map(member => (
-              <div
-                key={member.id}
-                onClick={() => toggleTeamMember(member.id)}
-                className={`flex items-center p-3 border rounded-lg cursor-pointer ${
-                  project.teamMembers.includes(member.id)
-                    ? 'border-[#4DA5AD] bg-[#4DA5AD]/5'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="w-8 h-8 bg-gradient-to-br from-[#4DA5AD] to-[#2D4A6B] rounded-full flex items-center justify-center text-white font-medium mr-3">
-                  {member.name.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900">{member.name}</p>
-                  <p className="text-sm text-gray-500">{member.role}</p>
-                </div>
-                <div className={`w-5 h-5 rounded border flex items-center justify-center ${
-                  project.teamMembers.includes(member.id)
-                    ? 'bg-[#4DA5AD] border-[#4DA5AD]'
-                    : 'bg-white border-gray-300'
-                }`}>
-                  {project.teamMembers.includes(member.id) && (
-                    <span className="text-white text-xs">✓</span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Team *
+            </label>
+            <select
+              name="selectedTeam"
+              value={project.selectedTeam}
+              onChange={handleChange}
+              required
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="">Choose a team</option>
+              {availableTeams.map(team => (
+                <option key={team.id} value={team.id}>
+                  {team.name} (Lead: {team.lead}, Members: {team.memberCount})
+                </option>
+              ))}
+            </select>
           </div>
+
+          {/* Show selected team info */}
+          {project.selectedTeam && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-3">Selected Team Details</h3>
+              {(() => {
+                const selectedTeam = availableTeams.find(t => t.id === parseInt(project.selectedTeam));
+                return selectedTeam ? (
+                  <>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Team Lead:</span> {selectedTeam.lead}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Description:</span> {selectedTeam.description}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Members:</span> {selectedTeam.memberCount}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <span className="font-medium">Performance:</span> {selectedTeam.performance}%
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-3">
+                      Tasks can be assigned to team members when creating tasks.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-gray-500 text-center py-2">Team not found</p>
+                );
+              })()}
+            </div>
+          )}
         </div>
 
         {/* Submit */}

@@ -25,8 +25,9 @@ import Projects from './pages/projectmanager/Projects';
 import CreateProject from './pages/projectmanager/CreateProject';
 import ProjectDetails from './pages/projectmanager/ProjectDetails';
 import Tasks from './pages/projectmanager/Tasks';
+import Reportpm from './pages/projectmanager/Reports';
 import CreateTask from './pages/projectmanager/CreateTask';
-import TaskDetails from './pages/projectmanager/TaskDetails';
+import TaskDetails from './pages/projectManager/TaskDetails';
 import Progress from './pages/projectmanager/Progress';
 // import TeamMemberDashboard from './pages/TeamMemberDashboard/Dashboard';
 
@@ -54,17 +55,19 @@ export default function App(){
         <Route path="reports" element={<Reports />} /> {/* /admin/reports */}
         <Route path="settings" element={<SettingsPage />} /> {/* /admin/settings */}
       </Route>
+            <Route path="/project-manager" element={<Navigate to="/manager/dashboard" replace />} />
        {/* Project Manager Routes */}
         <Route path="/manager/*" element={<ManagerLayout />}>
           <Route path="dashboard" element={<ProjectManagerDashboard />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/create" element={<CreateProject />} />
+          <Route path="manager/tasks/edit/:id" element={<CreateTask />} /> 
           <Route path="projects/:id" element={<ProjectDetails />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="tasks/create" element={<CreateTask />} />
           <Route path="tasks/:id" element={<TaskDetails />} />
           <Route path="progress" element={<Progress />} />
-          <Route path="reports" element={<Reports />} />
+          <Route path="reports" element={<Reportpm />} />
           <Route index element={<Navigate to="/manager/dashboard" replace />} />
         </Route>
     </Routes>
