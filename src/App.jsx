@@ -6,7 +6,7 @@ import LandingPage from "./Landig";
 import Signup from './auth/Signup';
 import Login from './auth/Login';
 import ForgetPassword from './auth/ForgetPassword';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/teamMember/Dashboard';
 
 // Admin imports
 import AdminLayout from './Component/admin/AdminLayout';

@@ -58,21 +58,6 @@ const Reports = () => {
           { label: 'Active Projects', value: teamPerformance.reduce((sum, team) => sum + team.activeProjects, 0) },
         ];
       }
-    },
-    {
-      id: 'budget',
-      name: 'Budget Utilization Report',
-      description: 'Project budget tracking and spending',
-      icon: <TrendingUp className="w-6 h-6" />,
-      getMetrics: () => {
-        const budgetAnalytics = EnhancedDataService.getBudgetAnalytics();
-        return [
-          { label: 'Total Budget', value: `$${budgetAnalytics.totalBudget.toLocaleString()}` },
-          { label: 'Total Spent', value: `$${budgetAnalytics.totalSpent.toLocaleString()}` },
-          { label: 'Remaining Budget', value: `$${budgetAnalytics.remainingBudget.toLocaleString()}` },
-          { label: 'Avg Utilization', value: `${Math.round((budgetAnalytics.totalSpent / budgetAnalytics.totalBudget) * 100) || 0}%` },
-        ];
-      }
     }
   ];
 
