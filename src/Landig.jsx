@@ -1,4 +1,5 @@
 import React from 'react';
+import taskflowLogo from "../public/favicon.png"; // adjust path as needed
 import { Link } from 'react-router-dom';
 // Signup is rendered on its own route; not imported here
 
@@ -11,7 +12,8 @@ const LandingPage = () => {
   <div className="flex items-center gap-3">
     
     <a href="#home" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
-      Home
+      
+     <img src={taskflowLogo} alt="TaskFlow Logo" style={{ width: "120px" }} /> 
       <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
     </a>
   </div>

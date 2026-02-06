@@ -20,17 +20,17 @@ import SettingsPage from './pages/admin/SettingsPage';
 import TeamDetailsPage from './pages/admin/TeamDetailsPage';
 // Project Manager imports
 import ProjectManagerDashboard from './pages/projectManager/ProjectManagerDashboard';
-import ManagerLayout from './Component/projectmanager/PromanagerLayout';
-import Projects from './pages/projectmanager/Projects';
-import CreateProject from './pages/projectmanager/CreateProject';
-import ProjectDetails from './pages/projectmanager/ProjectDetails';
+import ManagerLayout from './Component/projectManager/PromanagerLayout';
+import Projects from './pages/projectManager/Projects';
+import CreateProject from './pages/projectManager/CreateProject';
+import ProjectDetails from './pages/projectManager/ProjectDetails';
 import Tasks from './pages/projectManager/Tasks';
 import Reportpm from './pages/projectManager/Reports';
 import CreateTask from './pages/projectManager/CreateTask';
 import EditTask from './pages/projectManager/EditTask';
 import TaskDetails from './pages/projectManager/TaskDetails';
 import Progress from './pages/projectManager/Progress';
-import Settings from './pages/projectManager/settings';
+import Settings from './pages/projectManager/Settings';
 
 export default function App(){
   return(
