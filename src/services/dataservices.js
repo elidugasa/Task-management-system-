@@ -281,6 +281,40 @@ class DataService {
       this.saveTasks(initialTasks);
     }
   }
+  
+  static getTasksForUser(userId) {
+    const allTasks = this.getTasks();
+    return allTasks.filter(task => task.assigneeId === userId);
+  }
+
+  static updateTaskProgress(taskId, progress) {
+    const tasks = this.getTasks();
+    const taskIndex = tasks.findIndex(t => t.id === taskId);
+    
+    if (taskIndex !== -1) {
+      const status = progress === 100 ? 'completed' : 'in-progress';
+      tasks[taskIndex] = {
+        ...tasks[taskIndex],
+        progress: progress,
+        status: status,
+        updatedAt: new Date().toISOString().split('T')[0],
+        actualHours: (tasks[taskIndex].actualHours || 0) + 1
+      };
+      
+      this.saveTasks(tasks);
+      return tasks[taskIndex];
+    }
+    return null;
+  }
+
+  static getMyProjects(userId) {
+    const myTasks = this.getTasksForUser(userId);
+    const projectIds = [...new Set(myTasks.map(task => task.projectId))];
+    const allProjects = this.getProjects();
+    return allProjects.filter(project => projectIds.includes(project.id));
+  }
+
+  
 }
 
 // Initialize data on import
