@@ -44,7 +44,7 @@ const Signup = () => {
     
     try {
       await signup(form);
-      navigate('/dashboard');
+      navigate('team-member/dashboard');
     } catch (err) {
       setError('Signup failed. Please try again.');
     } finally {
