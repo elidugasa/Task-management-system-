@@ -11,8 +11,8 @@ export const AuthProvider = ({ children }) => {
     // Demo users with passwords for local validation
     const users = {
       'admin@taskflow.com': { id: 1, name: 'Admin', role: 'admin', team: 'Management', password: 'adminpass' },
-      'pm@taskflow.com': { id: 2, name: 'Project Manager', role: 'project_manager', team: 'Engineering', password: 'pmpass' },
-      'member@taskflow.com': { id: 3, name: 'Team Member', role: 'team_member', team: 'Engineering', password: 'memberpass' }
+      'pm@task.com': { id: 2, name: 'Project Manager', role: 'project_manager', team: 'Engineering', password: 'pmpass' },
+      'member@task.com': { id: 3, name: 'Team Member', role: 'team_member', team: 'Engineering', password: 'memberpass' }
     };
 
     const found = users[email];
