@@ -1,3 +1,4 @@
+// src/auth/Login.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -43,10 +44,26 @@ const SignIn = () => {
         localStorage.removeItem('rememberedEmail');
       }
       
-      // Redirect based on role
-      if (user?.role === 'admin') navigate('/admin');
-      else if (user?.role === 'project_manager') navigate('/project-manager');
-      else navigate('/team-member');
+      // Redirect based on role - FIXED PATHS
+      if (user) {
+        const userRole = user.role === 'team_member' ? 'team-member' : 
+                        user.role === 'project_manager' ? 'project-manager' : 
+                        user.role;
+        
+        switch (userRole) {
+          case 'admin':
+            navigate('/admin/dashboard');
+            break;
+          case 'project-manager':
+            navigate('/manager/dashboard');
+            break;
+          case 'team-member':
+            navigate('/team-member/dashboard');
+            break;
+          default:
+            navigate('/team-member/dashboard');
+        }
+      }
     } catch (err) {
       setError('Invalid email or password. Please try again.');
     } finally {
@@ -85,8 +102,8 @@ const SignIn = () => {
   const handleDemoLogin = (email) => {
     const demoPasswords = {
       'admin@taskflow.com': 'adminpass',
-      'pm@taskflow.com': 'pmpass',
-      'member@taskflow.com': 'memberpass'
+      'pm@task.com': 'pmpass',  // FIXED: Correct email from DataService
+      'member@task.com': 'memberpass'  // FIXED: Correct email from DataService
     };
 
     const password = demoPasswords[email] || 'password123';
@@ -94,11 +111,27 @@ const SignIn = () => {
     setTimeout(async () => {
       try {
         const user = await login(email, password);
-        if (user?.role === 'admin') navigate('/admin');
-        else if (user?.role === 'project_manager') navigate('/project-manager');
-        else navigate('/team-member');
+        if (user) {
+          const userRole = user.role === 'team_member' ? 'team-member' : 
+                          user.role === 'project_manager' ? 'project-manager' : 
+                          user.role;
+          
+          switch (userRole) {
+            case 'admin':
+              navigate('/admin/dashboard');
+              break;
+            case 'project-manager':
+              navigate('/manager/dashboard');
+              break;
+            case 'team-member':
+              navigate('/team-member/dashboard');
+              break;
+            default:
+              navigate('/team-member/dashboard');
+          }
+        }
       } catch (err) {
-        setError('Demo login failed');
+        setError('Demo login failed. Please check demo credentials.');
       }
     }, 100);
   };
@@ -250,16 +283,16 @@ const SignIn = () => {
                 </button>
               </form>
 
-              {/* Demo Accounts */}
-              {/* <div className="mt-8 pt-8 border-t border-gray-200">
+              {/* Demo Accounts Section - Updated with correct emails */}
+              <div className="mt-8 pt-8 border-t border-gray-200">
                 <h3 className="text-sm font-semibold text-[#2D4A6B] mb-4 text-center">
                   Try Demo Accounts
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { email: 'admin@taskflow.com', role: 'Admin', icon: '👑', color: 'from-purple-100 to-purple-50' },
-                    { email: 'pm@taskflow.com', role: 'Manager', icon: '📋', color: 'from-blue-100 to-blue-50' },
-                    { email: 'member@taskflow.com', role: 'Member', icon: '👨‍💻', color: 'from-green-100 to-green-50' }
+                    { email: 'pm@task.com', role: 'Manager', icon: '📋', color: 'from-blue-100 to-blue-50' },
+                    { email: 'member@task.com', role: 'Member', icon: '👨‍💻', color: 'from-green-100 to-green-50' }
                   ].map((demo) => (
                     <button
                       key={demo.email}
@@ -278,7 +311,7 @@ const SignIn = () => {
                     </button>
                   ))}
                 </div>
-              </div> */}
+              </div>
 
               {/* Divider */}
               <div className="mt-8 flex items-center">

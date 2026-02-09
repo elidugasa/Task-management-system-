@@ -22,6 +22,225 @@ class DataService {
       return initialTeamMembers;
     }
   }
+   static getUsers() {
+    if (!isBrowser) return [];
+    
+    try {
+      const saved = localStorage.getItem('users');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Error loading users:', error);
+      return [];
+    }
+  }
+
+  static saveUsers(users) {
+    if (!isBrowser) return;
+    
+    try {
+      localStorage.setItem('users', JSON.stringify(users));
+    } catch (error) {
+      console.error('Error saving users:', error);
+    }
+  }
+
+  static createUser(userData) {
+  const users = this.getUsers();
+  
+  // Check if user already exists
+  const existingUser = users.find(user => user.email === userData.email);
+  if (existingUser) {
+    throw new Error('User with this email already exists');
+  }
+  
+  // Generate unique IDs
+  const userId = Date.now();
+  const assigneeId = userId + 1000; // Different from user ID to avoid conflicts
+  
+  // Create new user
+  const newUser = {
+    id: userId,
+    ...userData,
+    role: 'team-member', // Default role
+    assigneeId: assigneeId, // Unique assigneeId for task assignment
+    team: userData.team || 'Engineering', // Default team
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  users.push(newUser);
+  this.saveUsers(users);
+  
+  // Create corresponding team member
+  this.createTeamMemberForUser(newUser);
+  
+  return newUser;
+}
+
+// Add this method to create team members for new users:
+static createTeamMemberForUser(user) {
+  const teamMembers = this.getTeamMembers();
+  
+  // Check if team member already exists
+  const existingMember = teamMembers.find(member => member.email === user.email);
+  if (existingMember) {
+    return existingMember;
+  }
+  
+  // Create new team member
+  const newTeamMember = {
+    id: user.assigneeId, // Use assigneeId as team member ID
+    name: user.name,
+    email: user.email,
+    role: 'Developer', // Default role for new team members
+    team: user.team || 'Engineering',
+    status: 'active',
+    joinDate: new Date().toISOString().split('T')[0],
+    skills: ['New Member'],
+    availability: 100
+  };
+  
+  teamMembers.push(newTeamMember);
+  this.saveTeamMembers(teamMembers);
+  
+  return newTeamMember;
+}
+
+// Update the initializeData method to add demo users properly:
+static initializeData() {
+  if (!isBrowser) return;
+  
+  // Initialize data in localStorage if not present
+  if (!localStorage.getItem('teamMembers')) {
+    this.saveTeamMembers(initialTeamMembers);
+  }
+  
+  if (!localStorage.getItem('teams')) {
+    this.saveTeams(initialTeams);
+  }
+  
+  if (!localStorage.getItem('managerProjects')) {
+    this.saveProjects(initialProjects);
+  }
+  
+  if (!localStorage.getItem('managerTasks')) {
+    this.saveTasks(initialTasks);
+  }
+  
+  // Initialize users if not present (with demo users)
+  if (!localStorage.getItem('users')) {
+    const demoUsers = [
+      {
+        id: 1,
+        name: 'Admin',
+        email: 'admin@taskflow.com',
+        password: 'adminpass',
+        role: 'admin',
+        assigneeId: 101,
+        team: 'Management',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: 'Project Manager',
+        email: 'pm@task.com',
+        password: 'pmpass',
+        role: 'project-manager',
+        assigneeId: 102,
+        team: 'Engineering',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        name: 'Team Member',
+        email: 'member@task.com',
+        password: 'memberpass',
+        role: 'team-member',
+        assigneeId: 103,
+        team: 'Engineering',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+    
+    this.saveUsers(demoUsers);
+    
+    // Also add these demo users to team members
+    const teamMembers = this.getTeamMembers();
+    demoUsers.forEach(user => {
+      if (!teamMembers.find(member => member.email === user.email)) {
+        teamMembers.push({
+          id: user.assigneeId,
+          name: user.name,
+          email: user.email,
+          role: user.role === 'admin' ? 'Admin' : 
+                user.role === 'project-manager' ? 'Project Manager' : 'Developer',
+          team: user.team,
+          status: 'active',
+          joinDate: new Date().toISOString().split('T')[0],
+          skills: user.role === 'admin' ? ['Management', 'Administration'] : 
+                  user.role === 'project-manager' ? ['Project Management', 'Leadership'] : 
+                  ['Development', 'Teamwork']
+        });
+      }
+    });
+    this.saveTeamMembers(teamMembers);
+  }
+}
+
+  static authenticateUser(email, password) {
+    const users = this.getUsers();
+    const user = users.find(u => u.email === email && u.password === password);
+    return user || null;
+  }
+
+  static getUserById(id) {
+    const users = this.getUsers();
+    return users.find(user => user.id === id) || null;
+  }
+
+  // Initialize with default users if needed
+  static initializeData() {
+    if (!isBrowser) return;
+    
+    // Initialize data in localStorage if not present
+    if (!localStorage.getItem('teamMembers')) {
+      this.saveTeamMembers(initialTeamMembers);
+    }
+    
+    if (!localStorage.getItem('teams')) {
+      this.saveTeams(initialTeams);
+    }
+    
+    if (!localStorage.getItem('managerProjects')) {
+      this.saveProjects(initialProjects);
+    }
+    
+    if (!localStorage.getItem('managerTasks')) {
+      this.saveTasks(initialTasks);
+    }
+    
+    // Initialize users if not present
+    if (!localStorage.getItem('users')) {
+      // Add default team member from initial data as a user
+      const defaultTeamMember = initialTeamMembers[0];
+      const defaultUser = {
+        id: defaultTeamMember.id,
+        name: defaultTeamMember.name,
+        email: 'elias@company.com', // Default email
+        password: 'password123', // Default password
+        role: 'team-member',
+        assigneeId: defaultTeamMember.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      this.saveUsers([defaultUser]);
+    }
+  }
+
 
   static saveTeamMembers(members) {
     if (!isBrowser) return;

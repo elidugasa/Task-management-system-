@@ -1,4 +1,4 @@
-// src/pages/manager/Tasks.jsx
+// src/pages/manager/Tasks.jsx - FIXED VERSION
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Search, Filter, Eye, MoreVertical, X, ChevronDown, ChevronUp } from 'lucide-react';
@@ -12,82 +12,91 @@ const Tasks = () => {
   const searchFromUrl = queryParams.get('q') || '';
   
   // Load tasks from localStorage
-  // In Tasks.jsx, update the initial tasks array:
-const [tasks, setTasks] = useState(() => {
-  const savedTasks = localStorage.getItem('managerTasks');
-  return savedTasks ? JSON.parse(savedTasks) : [
-    { 
-      id: 1, 
-      title: 'Fix login authentication bug', 
-      project: 'Mobile App v2', 
-      projectId: 1,
-      assignee: 'John Doe', 
-      projectManager: 'Alex Johnson', // ← ADD THIS
-      priority: 'high', 
-      deadline: '2024-03-15', 
-      progress: 80, 
-      status: 'in-progress',
-      estimatedHours: 8,
-      actualHours: 6
-    },
-    { 
-      id: 2, 
-      title: 'Design homepage mockups', 
-      project: 'Website Redesign', 
-      projectId: 2,
-      assignee: 'Jane Smith', 
-      projectManager: 'Sarah Miller', // ← ADD THIS
-      priority: 'medium', 
-      deadline: '2024-03-20', 
-      progress: 60, 
-      status: 'in-progress',
-      estimatedHours: 12,
-      actualHours: 8
-    },
-    { 
-      id: 3, 
-      title: 'Write API documentation', 
-      project: 'API Migration', 
-      projectId: 3,
-      assignee: 'Mike Wilson', 
-      projectManager: 'David Chen', // ← ADD THIS
-      priority: 'low', 
-      deadline: '2024-03-01', 
-      progress: 100, 
-      status: 'completed',
-      estimatedHours: 6,
-      actualHours: 6
-    },
-    { 
-      id: 4, 
-      title: 'Database optimization', 
-      project: 'Payment Integration', 
-      projectId: 4,
-      assignee: 'Alice Brown', 
-      projectManager: 'Maria Garcia', // ← ADD THIS
-      priority: 'high', 
-      deadline: '2024-03-10', 
-      progress: 40, 
-      status: 'pending',
-      estimatedHours: 10,
-      actualHours: 4
-    },
-    { 
-      id: 5, 
-      title: 'Mobile testing phase 2', 
-      project: 'Mobile App v2', 
-      projectId: 1,
-      assignee: 'John Doe', 
-      projectManager: 'Alex Johnson', // ← ADD THIS
-      priority: 'medium', 
-      deadline: '2024-03-25', 
-      progress: 20, 
-      status: 'pending',
-      estimatedHours: 16,
-      actualHours: 3
-    },
-  ];
-});
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem('managerTasks');
+    return savedTasks ? JSON.parse(savedTasks) : [
+      { 
+        id: 1, 
+        title: 'Fix login authentication bug', 
+        project: 'Mobile App v2', 
+        projectId: 1,
+        assignee: 'John Doe', 
+        assigneeId: 103,
+        priority: 'high', 
+        deadline: '2024-03-15', 
+        progress: 80, 
+        status: 'in-progress',
+        estimatedHours: 8,
+        actualHours: 6,
+        createdAt: '2024-03-01',
+        updatedAt: '2024-03-05'
+      },
+      { 
+        id: 2, 
+        title: 'Design homepage mockups', 
+        project: 'Website Redesign', 
+        projectId: 2,
+        assignee: 'Jane Smith', 
+        assigneeId: 104,
+        priority: 'medium', 
+        deadline: '2024-03-20', 
+        progress: 60, 
+        status: 'in-progress',
+        estimatedHours: 12,
+        actualHours: 8,
+        createdAt: '2024-03-02',
+        updatedAt: '2024-03-06'
+      },
+      { 
+        id: 3, 
+        title: 'Write API documentation', 
+        project: 'API Migration', 
+        projectId: 3,
+        assignee: 'Mike Wilson', 
+        assigneeId: 105,
+        priority: 'low', 
+        deadline: '2024-03-01', 
+        progress: 100, 
+        status: 'completed',
+        estimatedHours: 6,
+        actualHours: 6,
+        createdAt: '2024-02-28',
+        updatedAt: '2024-03-01'
+      },
+      { 
+        id: 4, 
+        title: 'Database optimization', 
+        project: 'Payment Integration', 
+        projectId: 4,
+        assignee: 'Alice Brown', 
+        assigneeId: 106,
+        priority: 'high', 
+        deadline: '2024-03-10', 
+        progress: 40, 
+        status: 'pending',
+        estimatedHours: 10,
+        actualHours: 4,
+        createdAt: '2024-03-03',
+        updatedAt: '2024-03-07'
+      },
+      { 
+        id: 5, 
+        title: 'Mobile testing phase 2', 
+        project: 'Mobile App v2', 
+        projectId: 1,
+        assignee: 'John Doe', 
+        assigneeId: 103,
+        priority: 'medium', 
+        deadline: '2024-03-25', 
+        progress: 20, 
+        status: 'pending',
+        estimatedHours: 16,
+        actualHours: 3,
+        createdAt: '2024-03-04',
+        updatedAt: '2024-03-08'
+      },
+    ];
+  });
 
   const [filter, setFilter] = useState('all');
   const [localSearch, setLocalSearch] = useState(searchFromUrl);
@@ -326,7 +335,7 @@ const [tasks, setTasks] = useState(() => {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-gray-900 text-sm">{task.projectName}</span>
+                        <span className="text-gray-900 text-sm">{task.project}</span> {/* Fixed: project not projectName */}
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center">
@@ -448,7 +457,7 @@ const [tasks, setTasks] = useState(() => {
                     </div>
                     <div className="text-right">
                       <div className="text-xs text-gray-500">Project</div>
-                      <div className="text-sm font-medium text-[#4DA5AD]">{task.projectName}</div>
+                      <div className="text-sm font-medium text-[#4DA5AD]">{task.project}</div> {/* Fixed: project not projectName */}
                     </div>
                   </div>
                   
