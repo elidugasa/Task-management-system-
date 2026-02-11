@@ -1,19 +1,28 @@
+// src/pages/teamMember/Reports.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, Download, Calendar, BarChart3, TrendingUp, 
   Clock, CheckCircle, Printer, Share2, AlertCircle 
 } from 'lucide-react';
 import DataService from '../../services/dataservices';
+import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberReports = () => {
+  const { user } = useAuth();
   const [timePeriod, setTimePeriod] = useState('month');
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
+    if (!user) return;
+    
     const allTasks = DataService.getTasks();
-    // Assuming user ID 1 for this view
-    setTasks(allTasks.filter(task => task.assigneeId === 1));
-  }, []);
+    const userTasks = allTasks.filter(task => 
+      task.assigneeId === user.assigneeId || 
+      task.assigneeId === user.id ||
+      (task.assignee && task.assignee.toLowerCase().includes(user.name?.toLowerCase() || ''))
+    );
+    setTasks(userTasks);
+  }, [user]);
 
   // --- Real Data Engine ---
   const { reportData, weeklyPerformance, projects } = useMemo(() => {
@@ -68,7 +77,18 @@ const TeamMemberReports = () => {
     };
   }, [tasks]);
 
-  const exportReport = (format) => alert(`Preparing ${format.toUpperCase()} export...`);
+  const exportReport = (format) => alert(`Preparing ${format.toUpperCase()} export for ${user.name}...`);
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Please login to view reports...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
@@ -76,7 +96,7 @@ const TeamMemberReports = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500">Comprehensive performance analysis and exports</p>
+          <p className="text-gray-500">Performance analysis for {user.name}</p>
         </div>
         <div className="flex items-center gap-2">
           <select 

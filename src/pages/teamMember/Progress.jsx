@@ -1,9 +1,11 @@
+// src/pages/teamMember/Progress.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   TrendingUp, Target, Award, Clock, 
   CheckCircle, Download, Calendar
 } from 'lucide-react';
 import DataService from '../../services/dataservices';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Sub-components for cleaner JSX ---
 const StatCard = ({ title, value, subtext, icon: Icon, colorClass }) => (
@@ -39,14 +41,21 @@ const ProgressRow = ({ label, current, total, percentage, unit = "tasks" }) => (
 );
 
 const TeamMemberProgress = () => {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [timePeriod, setTimePeriod] = useState('month');
 
   useEffect(() => {
-    // In a real app, you'd pass the actual userId
+    if (!user) return;
+    
     const allTasks = DataService.getTasks();
-    setTasks(allTasks.filter(task => task.assigneeId === 1));
-  }, []);
+    const userTasks = allTasks.filter(task => 
+      task.assigneeId === user.assigneeId || 
+      task.assigneeId === user.id ||
+      (task.assignee && task.assignee.toLowerCase().includes(user.name?.toLowerCase() || ''))
+    );
+    setTasks(userTasks);
+  }, [user]);
 
   // --- Memoized Data Calculations ---
   const { stats, projectBreakdown } = useMemo(() => {
@@ -84,13 +93,24 @@ const TeamMemberProgress = () => {
     };
   }, [tasks]);
 
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Please login to view progress...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">My Progress</h1>
-          <p className="text-gray-600">Performance insights and task metrics</p>
+          <p className="text-gray-600">Performance insights for {user.name}</p>
         </div>
         
         <div className="flex items-center gap-3">

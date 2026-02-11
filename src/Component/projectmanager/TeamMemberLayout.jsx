@@ -1,35 +1,49 @@
 // src/Component/projectmanager/TeamMemberLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, CheckSquare, TrendingUp, FileText, 
   User, LogOut, Bell, HelpCircle, Search, X,
   Menu, Calendar, Settings, Home
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberLayout = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [employee, setEmployee] = useState({
+    name: 'User',
+    role: 'Team Member',
+    avatar: 'U',
+    team: 'Engineering',
+    email: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setEmployee({
+        name: user.name || 'User',
+        role: user.role === 'team-member' ? 'Developer' : 
+              user.role === 'project-manager' ? 'Project Manager' : 
+              user.role === 'admin' ? 'Admin' : 
+              'Team Member',
+        avatar: user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U',
+        team: user.team || 'Engineering',
+        email: user.email || ''
+      });
+    }
+  }, [user]);
 
   const navItems = [
     { path: '/team-member/dashboard', icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard' },
     { path: '/team-member/tasks', icon: <CheckSquare className="w-5 h-5" />, label: 'My Tasks' },
-    
     { path: '/team-member/progress', icon: <TrendingUp className="w-5 h-5" />, label: 'Progress' },
     { path: '/team-member/reports', icon: <FileText className="w-5 h-5" />, label: 'Reports' },
     { path: '/team-member/profile', icon: <User className="w-5 h-5" />, label: 'Profile' },
   ];
-
-  const employee = {
-    id: 1,
-    name: 'Tewodros Mekonnen',
-    role: 'Frontend Developer',
-    avatar: 'TM',
-    team: 'Engineering Team',
-    email: 'tewodros@company.com'
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -44,14 +58,23 @@ const TeamMemberLayout = () => {
   const handleLogout = () => setShowLogoutConfirm(true);
   
   const confirmLogout = () => {
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userData');
+    logout();
     navigate('/login');
     setShowLogoutConfirm(false);
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -77,7 +100,9 @@ const TeamMemberLayout = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Team Portal</h1>
-              <p className="text-xs text-gray-500">Task Management</p>
+              <p className="text-xs text-gray-500">
+                {employee.role === 'Developer' ? 'Team Member' : employee.role} Dashboard
+              </p>
             </div>
           </div>
         </div>
@@ -145,7 +170,7 @@ const TeamMemberLayout = () => {
             <div className="lg:hidden">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#4DA5AD] to-[#2D4A6B] rounded-lg flex items-center justify-center text-white font-bold mr-2">
-                  TM
+                  {employee.avatar}
                 </div>
                 <span className="font-bold text-gray-900">Team Portal</span>
               </div>

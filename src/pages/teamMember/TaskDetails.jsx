@@ -37,7 +37,7 @@ const mockTasks = [
     ]
   },
   {
-    id: 2,
+    id: 5,
     title: 'Update Dashboard UI',
     description: 'Redesign the dashboard with new components',
     priority: 'medium',

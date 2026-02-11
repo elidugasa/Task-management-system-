@@ -1,24 +1,27 @@
 // src/pages/teamMember/Profile.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Phone, Calendar, MapPin, 
   Briefcase, Award, Edit, Save,
   Camera, Lock, Bell, Globe
 } from 'lucide-react';
+import DataService from '../../services/dataservices';
+import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberProfile = () => {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
-    name: 'Tewodros Mekonnen',
-    role: 'Frontend Developer',
-    email: 'tewodros@company.com',
+    name: '',
+    role: '',
+    email: '',
     phone: '+251 911 234 567',
-    location: 'Addis Ababa, Ethiopia',
-    team: 'Engineering Team',
-    joinDate: '2023-01-15',
-    bio: 'Passionate frontend developer with expertise in React, TypeScript, and modern web technologies.',
-    skills: ['React', 'TypeScript', 'JavaScript', 'HTML/CSS', 'Tailwind CSS', 'Git'],
-    certifications: ['AWS Certified Developer', 'React Certification'],
+    location: 'Jimma,Oromia, Ethiopia',
+    team: 'Engineering',
+    joinDate: '2024-01-01',
+    bio: '',
+    skills: ['React', 'TypeScript', 'JavaScript'],
+    certifications: [],
     languages: ['Amharic (Native)', 'English (Fluent)']
   });
 
@@ -28,6 +31,27 @@ const TeamMemberProfile = () => {
     weeklyReports: true
   });
 
+  useEffect(() => {
+    if (user) {
+      // Get team member data from DataService
+      const teamMembers = DataService.getTeamMembers();
+      const teamMember = teamMembers.find(member => 
+        member.email === user.email || member.id === user.assigneeId || member.id === user.id
+      ) || {};
+      
+      setProfile(prev => ({
+        ...prev,
+        name: user.name || teamMember.name || 'User',
+        role: user.role === 'team-member' ? 'Developer' : user.role || 'Team Member',
+        email: user.email || '',
+        team: user.team || teamMember.team || 'Engineering',
+        joinDate: teamMember.joinDate || '2024-01-01',
+        bio: teamMember.bio || `Team member with ${teamMember.skills ? teamMember.skills.length : 0} skills.`,
+        skills: teamMember.skills || ['React', 'TypeScript', 'JavaScript']
+      }));
+    }
+  }, [user]);
+
   const handleInputChange = (field, value) => {
     setProfile(prev => ({
       ...prev,
@@ -36,6 +60,7 @@ const TeamMemberProfile = () => {
   };
 
   const handleSave = () => {
+    // In a real app, you would save to DataService
     setIsEditing(false);
     alert('Profile updated successfully!');
   };
@@ -46,6 +71,17 @@ const TeamMemberProfile = () => {
       [field]: !prev[field]
     }));
   };
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Please login to view profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -82,6 +118,7 @@ const TeamMemberProfile = () => {
           </button>
         )}
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Profile Info */}

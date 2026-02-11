@@ -7,10 +7,12 @@ import {
   SortAsc, SortDesc, X, Download
 } from 'lucide-react';
 import DataService from '../../services/dataservices';
+import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberTasks = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -23,11 +25,24 @@ const TeamMemberTasks = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    const allTasks = DataService.getTasks();
-    const userTasks = allTasks.filter(task => task.assigneeId === 1);
-    setTasks(userTasks);
-    setFilteredTasks(userTasks);
-  }, []);
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    const loadTasks = () => {
+      const allTasks = DataService.getTasks();
+      const userTasks = allTasks.filter(task => 
+        task.assigneeId === user.assigneeId || 
+        task.assigneeId === user.id ||
+        (task.assignee && task.assignee.toLowerCase().includes(user.name?.toLowerCase() || ''))
+      );
+      setTasks(userTasks);
+      setFilteredTasks(userTasks);
+    };
+
+    loadTasks();
+  }, [user, navigate, location]);
 
   useEffect(() => {
     let result = [...tasks];
@@ -48,8 +63,8 @@ const TeamMemberTasks = () => {
       const query = searchQuery.toLowerCase();
       result = result.filter(task => 
         task.title.toLowerCase().includes(query) ||
-        (task.project || task.projectName || '').toLowerCase().includes(query) ||
-        task.description.toLowerCase().includes(query)
+        (task.project || '').toLowerCase().includes(query) ||
+        (task.description || '').toLowerCase().includes(query)
       );
     }
 
@@ -140,6 +155,17 @@ const TeamMemberTasks = () => {
   const isOverdue = (task) => {
     return new Date(task.deadline) < new Date() && task.status !== 'completed';
   };
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Please login to view tasks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

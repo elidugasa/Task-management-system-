@@ -6,12 +6,14 @@ import {
   Calendar, FileText, ChevronRight,
   PlayCircle, CheckCircle, Users, Target,
   Award, Zap, CalendarDays, BellRing,
-  BarChart3, Filter, Search, User, Eye // Added User import
+  BarChart3, Filter, Search, User, Eye
 } from 'lucide-react';
 import DataService from '../../services/dataservices';
+import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -22,26 +24,40 @@ const TeamMemberDashboard = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+      
       setIsLoading(true);
       
-      const currentEmployee = {
-        id: 1,
-        name: 'Tewodros Mekonnen',
-        role: 'Frontend Developer',
-        avatar: 'TM',
-        teamId: 1,
-        team: 'Engineering Team',
-        email: 'tewodros@company.com',
-        joinDate: '2023-01-15',
-        efficiency: 95
+      // Get employee data based on logged-in user
+      const teamMembers = DataService.getTeamMembers();
+      const currentEmployee = teamMembers.find(member => 
+        member.email === user.email || member.id === user.assigneeId || member.id === user.id
+      ) || {
+        id: user.assigneeId || user.id,
+        name: user.name || 'User',
+        role: user.role === 'team-member' ? 'Developer' : 'Team Member',
+        avatar: user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U',
+        team: user.team || 'Engineering',
+        email: user.email || '',
+        joinDate: '2024-01-01',
+        efficiency: 85
       };
       setEmployee(currentEmployee);
 
+      // Get tasks for the logged-in user
       const allTasks = DataService.getTasks();
-      const employeeTasks = allTasks.filter(task => task.assigneeId === currentEmployee.id);
+      const employeeTasks = allTasks.filter(task => 
+        task.assigneeId === currentEmployee.id || 
+        task.assigneeId === user.assigneeId ||
+        (task.assignee && task.assignee.toLowerCase().includes(user.name?.toLowerCase() || ''))
+      );
       setTasks(employeeTasks);
       setFilteredTasks(employeeTasks);
 
+      // Calculate statistics
       const completedTasks = employeeTasks.filter(t => t.status === 'completed').length;
       const inProgressTasks = employeeTasks.filter(t => t.status === 'in-progress').length;
       const pendingTasks = employeeTasks.filter(t => t.status === 'pending').length;
@@ -58,7 +74,7 @@ const TeamMemberDashboard = () => {
         inProgressTasks,
         pendingTasks,
         overdueTasks,
-        efficiency: currentEmployee.efficiency,
+        efficiency: currentEmployee.efficiency || 85,
         completionRate: employeeTasks.length > 0 
           ? Math.round((completedTasks / employeeTasks.length) * 100) 
           : 0,
@@ -73,7 +89,7 @@ const TeamMemberDashboard = () => {
     };
 
     loadData();
-  }, []);
+  }, [user, navigate]);
 
   useEffect(() => {
     let result = tasks;
@@ -86,7 +102,7 @@ const TeamMemberDashboard = () => {
       const query = searchQuery.toLowerCase();
       result = result.filter(task => 
         task.title.toLowerCase().includes(query) ||
-        (task.project || task.projectName || '').toLowerCase().includes(query)
+        (task.project || '').toLowerCase().includes(query)
       );
     }
 
@@ -166,6 +182,17 @@ const TeamMemberDashboard = () => {
       default: return 'bg-green-100 text-green-800';
     }
   };
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4DA5AD] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
