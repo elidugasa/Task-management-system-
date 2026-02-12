@@ -3,20 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Mail, Phone, Calendar, MapPin, 
   Briefcase, Award, Edit, Save,
-  Camera, Lock, Bell, Globe
+  Camera, Lock, Bell, Globe, Shield
 } from 'lucide-react';
 import DataService from '../../services/dataservices';
 import { useAuth } from '../../context/AuthContext';
 
 const TeamMemberProfile = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: '',
     role: '',
     email: '',
     phone: '+251 911 234 567',
-    location: 'Jimma,Oromia, Ethiopia',
+    location: 'Addis Ababa, Ethiopia',
     team: 'Engineering',
     joinDate: '2024-01-01',
     bio: '',
@@ -33,7 +33,6 @@ const TeamMemberProfile = () => {
 
   useEffect(() => {
     if (user) {
-      // Get team member data from DataService
       const teamMembers = DataService.getTeamMembers();
       const teamMember = teamMembers.find(member => 
         member.email === user.email || member.id === user.assigneeId || member.id === user.id
@@ -42,7 +41,10 @@ const TeamMemberProfile = () => {
       setProfile(prev => ({
         ...prev,
         name: user.name || teamMember.name || 'User',
-        role: user.role === 'team-member' ? 'Developer' : user.role || 'Team Member',
+        role: user.role === 'team-member' ? 'Developer' : 
+              user.role === 'project-manager' ? 'Project Manager' : 
+              user.role === 'admin' ? 'Administrator' : 
+              'Team Member',
         email: user.email || '',
         team: user.team || teamMember.team || 'Engineering',
         joinDate: teamMember.joinDate || '2024-01-01',
@@ -59,10 +61,27 @@ const TeamMemberProfile = () => {
     }));
   };
 
-  const handleSave = () => {
-    // In a real app, you would save to DataService
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+  const handleSave = async () => {
+    try {
+      // Prepare data to update - EXCLUDE ROLE from updates
+      const updatedData = {
+        name: profile.name,
+        team: profile.team,
+        phone: profile.phone,
+        location: profile.location,
+        bio: profile.bio
+        // DO NOT include role here - it should only be updated by admin
+      };
+      
+      await updateUserProfile(updatedData);
+      
+      setIsEditing(false);
+      alert('Profile updated successfully!\nNote: Role changes require administrator approval.');
+      
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const toggleNotification = (field) => {
@@ -70,6 +89,22 @@ const TeamMemberProfile = () => {
       ...prev,
       [field]: !prev[field]
     }));
+  };
+
+  const getRoleBadge = (role) => {
+    switch (role.toLowerCase()) {
+      case 'admin':
+      case 'administrator':
+        return { color: 'bg-purple-100 text-purple-800', icon: <Shield className="w-3 h-3 mr-1" /> };
+      case 'project-manager':
+      case 'project manager':
+        return { color: 'bg-blue-100 text-blue-800', icon: <Award className="w-3 h-3 mr-1" /> };
+      case 'team-member':
+      case 'developer':
+        return { color: 'bg-green-100 text-green-800', icon: <User className="w-3 h-3 mr-1" /> };
+      default:
+        return { color: 'bg-gray-100 text-gray-800', icon: <User className="w-3 h-3 mr-1" /> };
+    }
   };
 
   if (!user) {
@@ -82,6 +117,8 @@ const TeamMemberProfile = () => {
       </div>
     );
   }
+
+  const roleBadge = getRoleBadge(profile.role);
 
   return (
     <div className="space-y-6">
@@ -105,7 +142,7 @@ const TeamMemberProfile = () => {
               className="px-4 py-2 bg-[#4DA5AD] text-white rounded-lg hover:bg-[#3D8B93] flex items-center"
             >
               <Save className="w-4 h-4 mr-2" />
-              Save
+              Save Changes
             </button>
           </div>
         ) : (
@@ -118,7 +155,6 @@ const TeamMemberProfile = () => {
           </button>
         )}
       </div>
-
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Profile Info */}
@@ -152,18 +188,28 @@ const TeamMemberProfile = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DA5AD]"
                       placeholder="Full Name"
                     />
-                    <input
-                      type="text"
-                      value={profile.role}
-                      onChange={(e) => handleInputChange('role', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DA5AD]"
-                      placeholder="Role"
-                    />
+                    
+                    {/* Role Display - Non-editable */}
+                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                      <div className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${roleBadge.color}`}>
+                        {roleBadge.icon}
+                        {profile.role}
+                      </div>
+                      <span className="text-sm text-gray-500">
+                        (Role can only be changed by administrator)
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <>
                     <h2 className="text-2xl font-bold text-gray-900">{profile.name}</h2>
-                    <p className="text-lg text-[#4DA5AD] font-medium">{profile.role}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${roleBadge.color}`}>
+                        {roleBadge.icon}
+                        {profile.role}
+                      </span>
+                      <span className="text-lg text-[#4DA5AD] font-medium">{profile.team}</span>
+                    </div>
                   </>
                 )}
               </div>
@@ -172,15 +218,15 @@ const TeamMemberProfile = () => {
             {/* Contact Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { icon: <Mail className="w-4 h-4" />, field: 'email', label: 'Email' },
-                { icon: <Phone className="w-4 h-4" />, field: 'phone', label: 'Phone' },
-                { icon: <MapPin className="w-4 h-4" />, field: 'location', label: 'Location' },
-                { icon: <Briefcase className="w-4 h-4" />, field: 'team', label: 'Team' },
-                { icon: <Calendar className="w-4 h-4" />, field: 'joinDate', label: 'Join Date' },
+                { icon: <Mail className="w-4 h-4" />, field: 'email', label: 'Email', editable: false },
+                { icon: <Phone className="w-4 h-4" />, field: 'phone', label: 'Phone', editable: true },
+                { icon: <MapPin className="w-4 h-4" />, field: 'location', label: 'Location', editable: true },
+                { icon: <Briefcase className="w-4 h-4" />, field: 'team', label: 'Team', editable: true },
+                { icon: <Calendar className="w-4 h-4" />, field: 'joinDate', label: 'Join Date', editable: false },
               ].map((item) => (
                 <div key={item.field} className="flex items-center gap-3">
                   <div className="text-gray-400">{item.icon}</div>
-                  {isEditing ? (
+                  {isEditing && item.editable ? (
                     <input
                       type="text"
                       value={profile[item.field]}
@@ -189,7 +235,12 @@ const TeamMemberProfile = () => {
                       placeholder={item.label}
                     />
                   ) : (
-                    <span className="text-gray-700">{profile[item.field]}</span>
+                    <div className="flex-1">
+                      <span className="text-gray-700">{profile[item.field]}</span>
+                      {!item.editable && isEditing && (
+                        <p className="text-xs text-gray-400 mt-1">Contact admin to change</p>
+                      )}
+                    </div>
                   )}
                 </div>
               ))}
@@ -201,13 +252,29 @@ const TeamMemberProfile = () => {
             <h3 className="text-lg font-bold text-gray-900 mb-4">About</h3>
             
             {isEditing ? (
-              <textarea
-                value={profile.bio}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DA5AD] mb-6"
-                placeholder="Tell us about yourself..."
-              />
+              <>
+                <textarea
+                  value={profile.bio}
+                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4DA5AD] mb-6"
+                  placeholder="Tell us about yourself..."
+                />
+                
+                {/* Role Change Notice */}
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-6">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800 mb-1">Role Change Policy</h4>
+                      <p className="text-sm text-yellow-700">
+                        Role changes require administrator approval. Please contact your system administrator 
+                        or project manager if you need a role update.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </>
             ) : (
               <p className="text-gray-600 mb-6">{profile.bio}</p>
             )}
@@ -248,20 +315,38 @@ const TeamMemberProfile = () => {
 
         {/* Right Column - Settings */}
         <div className="space-y-6">
-          {/* Certifications */}
+          {/* Account Status */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-              <Award className="w-5 h-5 mr-2" />
-              Certifications
+              <Shield className="w-5 h-5 mr-2" />
+              Account Status
             </h3>
             
             <div className="space-y-3">
-              {profile.certifications.map((cert, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-700">{cert}</span>
-                </div>
-              ))}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Role Level</span>
+                <span className={`px-2 py-1 rounded text-xs font-medium ${roleBadge.color}`}>
+                  {profile.role}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Account Status</span>
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium">
+                  Active
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700">Member Since</span>
+                <span className="text-gray-600 text-sm">{profile.joinDate}</span>
+              </div>
+              
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">
+                  Need a role change? Contact your administrator with justification.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -302,9 +387,11 @@ const TeamMemberProfile = () => {
               Security
             </h3>
             
-            <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors">
+            <button className="w-full px-4 py-3 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors mb-3">
               Change Password
             </button>
+            
+           
           </div>
         </div>
       </div>

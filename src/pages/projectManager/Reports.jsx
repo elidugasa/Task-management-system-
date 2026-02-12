@@ -157,12 +157,12 @@ const Reports = () => {
         {/* Report Preview */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex-col md:flex-row justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{currentReport?.name}</h2>
+                <h2 className=" md:text-xl font-bold text-gray-900">{currentReport?.name}</h2>
                 <p className="text-gray-600">Generated: {new Date().toLocaleDateString()}</p>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 md:space-x-2">
                 {['PDF', 'Excel', 'CSV'].map(format => (
                   <button
                     key={format}

@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing user on mount
     const savedUser = localStorage.getItem('current_user');
     if (savedUser) {
       try {
@@ -40,20 +39,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Use DataService for authentication
       const users = DataService.getUsers() || [];
       const foundUser = users.find(u => u.email === email);
       
-      // If user exists in DataService, validate password
       if (foundUser) {
         if (foundUser.password !== password) {
           throw new Error('Invalid email or password');
         }
         
-        // Remove password from user object before storing
         const { password: _, ...userData } = foundUser;
         
-        // Ensure consistent role format
         let normalizedUserData = { ...userData };
         if (userData.role === 'team_member') {
           normalizedUserData.role = 'team-member';
@@ -66,7 +61,6 @@ export const AuthProvider = ({ children }) => {
         return normalizedUserData;
       }
       
-      // Fallback to hardcoded demo users
       const demoUsers = {
         'admin@taskflow.com': { 
           id: 1, 
@@ -116,16 +110,14 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (data) => {
     try {
-      // Use DataService to create user
       const newUser = DataService.createUser({
         name: data.name,
         email: data.email,
         password: data.password,
-        role: 'team-member', // Always create as team-member
+        role: 'team-member',
         team: 'Engineering'
       });
       
-      // Store user without password in auth context
       const { password, ...userData } = newUser;
       localStorage.setItem('current_user', JSON.stringify(userData));
       setUser(userData);
@@ -143,7 +135,55 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // Helper function to get user role for redirection
+  // ADD THIS FUNCTION: Update user profile
+  const updateUserProfile = async (updatedData) => {
+    try {
+      // Get current user
+      const users = DataService.getUsers() || [];
+      const userIndex = users.findIndex(u => u.email === user.email);
+      
+      if (userIndex !== -1) {
+        // Update in DataService
+        const { role, ...safeUpdatedData } = updatedData;
+        users[userIndex] = {
+          ...users[userIndex],
+          ...updatedData,
+          updatedAt: new Date().toISOString()
+        };
+        DataService.saveUsers(users);
+        
+        // Also update team member if exists
+        const teamMembers = DataService.getTeamMembers();
+        const memberIndex = teamMembers.findIndex(m => m.email === user.email);
+        if (memberIndex !== -1) {
+          teamMembers[memberIndex] = {
+            ...teamMembers[memberIndex],
+            name: updatedData.name || teamMembers[memberIndex].name,
+            // role: updatedData.role ? 
+            //       (updatedData.role === 'team-member' ? 'Developer' : 
+            //        updatedData.role === 'project-manager' ? 'Project Manager' : 
+            //        updatedData.role) : 
+            //       teamMembers[memberIndex].role,
+            team: updatedData.team || teamMembers[memberIndex].team
+          };
+          DataService.saveTeamMembers(teamMembers);
+        }
+      }
+      
+      // Update local state and localStorage
+      const { role: _, ...safeUserData } = updatedData;
+      const updatedUser = { ...user, ...updatedData };
+      localStorage.setItem('current_user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      
+      return updatedUser;
+      
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  };
+
   const getUserDashboardPath = () => {
     if (!user) return '/login';
     
@@ -169,6 +209,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
+    updateUserProfile, // ADD THIS
     getUserDashboardPath
   };
 

@@ -79,12 +79,12 @@ const TeamMemberLayout = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Mobile Menu Button */}
-      <button
-        onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
-      >
-        {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+     <button
+  onClick={toggleMobileMenu}
+  className={`lg:hidden fixed top-4  z-50 p-2 bg-white rounded-lg shadow-md ${isMobileMenuOpen ? 'right-6' : 'left-4'}`}
+>
+  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+</button>
 
       {/* Sidebar */}
       <div className={`
@@ -99,7 +99,7 @@ const TeamMemberLayout = () => {
               <Home className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Team Portal</h1>
+              <h1 className="hidden md:block text-xl font-bold text-gray-900">Team Portal</h1>
               <p className="text-xs text-gray-500">
                 {employee.role === 'Developer' ? 'Team Member' : employee.role} Dashboard
               </p>

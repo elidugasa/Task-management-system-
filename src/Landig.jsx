@@ -3,50 +3,122 @@ import { Link } from 'react-router-dom';
 // Signup is rendered on its own route; not imported here
 
 const LandingPage = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   return (
     <div className="min-h-screen bg- font-sans text-slate-800">
       {/* --- NAVIGATION --- */}
-     <nav className="flex justify-between items-center px-6 md:px-16 py-5 bg-gradient-to-r from-white/95 via-blue-50/95 to-white/95 backdrop-blur-lg sticky top-0 z-50 border-b border-blue-100/50 shadow-sm">
-  {/* Logo/Brand */}
-  <div className="flex items-center gap-3">
-    
-    <a href="#home" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
-      Home
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
-    </a>
-  </div>
-  
-  {/* Navigation Links */} <div className='flex justify-between items-center'>
-  <div className="hidden md:flex space-x-10 font-semibold text-sm text-gray-600">
-    <a href="#features" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
-      Features
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
-    </a>
-    <a href="#solutions" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
-      Solutions
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
-    </a>
-  </div>
+   <nav className="flex justify-between items-center px-6 md:px-16 py-5 bg-gradient-to-r from-white/95 via-blue-50/95 to-white/95 backdrop-blur-lg sticky top-0 z-50 border-b border-blue-100/50 shadow-sm">
+        {/* Left section - Mobile Menu Button */}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-gray-600 hover:text-[#4DA5AD] transition-colors"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              strokeWidth={1.5} 
+              stroke="currentColor" 
+              className="w-6 h-6"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" 
+              />
+            </svg>
+          </button>
+          
+          {/* Home Link - Hidden on mobile, visible on desktop */}
+          <a href="#home" className="hidden md:block hover:text-[#4DA5AD] transition-colors duration-300 relative group">
+            Home
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
+          </a>
+          <a href="#login" className="hidden md:hidden hover:text-[#4DA5AD] transition-colors duration-300 relative group">
+            Login
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
+          </a>
+        </div>
+        
+        {/* Center/Navigation Links */}
+        <div className="hidden md:flex space-x-10 font-semibold text-sm text-gray-600">
+          <a href="#features" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
+            Features
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
+          </a>
+          <a href="#solutions" className="hover:text-[#4DA5AD] transition-colors duration-300 relative group">
+            Solutions
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
+          </a>
+        </div>
 
-  {/* Auth Buttons */}
-  <div className="m flex gap-4">
-    <Link 
-      to="/login"
-      className="px-5 py-2.5 text-sm font-semibold cursor-pointer text-[#2D4A6B] hover:text-[#4DA5AD] transition-colors hover:bg-gray-50/80 rounded-lg">
-      Login
-    </Link>
-    <Link 
-      to="/signup"
-      className="px-6 py-2.5 text-sm font-semibold cursor-pointer text-white bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] rounded-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-[#4DA5AD]/30 inline-block text-center"
-    >
-      Get Started
-    </Link>
-  </div>
-  </div>
-</nav>
+        {/* Right section - Auth Buttons */}
+        <div className="flex gap-4">
+          <Link to={"/login"} className="hidden md:block hover:text-[#4DA5AD] transition-colors duration-300 relative group">
+            Login
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] group-hover:w-full transition-all duration-300"></span>
+          </Link>
+          <Link 
+            to="/signup"
+            className="px-6 py-2.5 text-sm font-semibold cursor-pointer text-white bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] rounded-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-[#4DA5AD]/30 inline-block text-center"
+          >
+            Get Started
+          </Link>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Dropdown */}
+      <div className={`md:hidden fixed left-0 right-0 w-full bg-white/95 backdrop-blur-lg border-b border-blue-100/50 shadow-lg z-40 transition-all duration-300 ${
+        isMobileMenuOpen ? 'top-[73px] opacity-100 visible' : 'top-[-300px] opacity-0 invisible'
+      }`}>
+        <div className="flex flex-col p-6 space-y-4">
+          {/* Home Link */}
+          <a 
+            href="#home" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="px-4 py-3 text-gray-700 hover:text-[#4DA5AD] hover:bg-gray-50 rounded-lg transition-colors text-base font-medium"
+          >
+            Home
+          </a>
+          
+          {/* Features Link */}
+          <a 
+            href="#features" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="px-4 py-3 text-gray-700 hover:text-[#4DA5AD] hover:bg-gray-50 rounded-lg transition-colors text-base font-medium"
+          >
+            Features
+          </a>
+          
+          {/* Solutions Link */}
+          <a 
+            href="#solutions" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="px-4 py-3 text-gray-700 hover:text-[#4DA5AD] hover:bg-gray-50 rounded-lg transition-colors text-base font-medium"
+          >
+            Solutions
+          </a>
+          
+          {/* Divider */}
+          <div className="border-t border-gray-200 my-2"></div>
+          
+          {/* Mobile Login Button */}
+          <Link 
+            to="/login"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="px-4 py-3 text-center text-[#2D4A6B] hover:text-[#4DA5AD] hover:bg-gray-50 rounded-lg transition-colors text-base font-medium"
+          >
+            Login
+          </Link>
+          
+          {/* Mobile Signup Button */}
+        
+        </div>
+      </div>
 
       {/* --- HERO SECTION --- */}
-      <header id="home" className="px-8 md:px-16 py-20 bg-white heigth-100vh overflow-hidden">
+      <header id="home" className="px-4 md:px-16 py-20 bg-white heigth-100vh overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           
           {/* Text Content */}
@@ -58,24 +130,24 @@ const LandingPage = () => {
               </span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-black text-[#2D4A6B] leading-[1.1] mb-6">
+            <h1 className="text-3xl  md:text-5xl md:text-6xl font-black text-[#2D4A6B] leading-[1.1] mb-6">
               Precision Project
               <br />
               <span className="text-[#4DA5AD]">Management for</span>
               <br />
               Companies
             </h1>
-            
-            <p className="text-lg text-slate-500 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+             <p className="text-left text-sm md:text-lg text-slate-500 mb-10 max-w-xl mx-auto px-1.5 lg:mx-0 leading-relaxed">
               The all-in-one platform for engineering companies to plan work, 
               manage teams, assign tasks, and track progress. Replace manual 
               tools with a single digital ecosystem.
             </p>
+           
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex m-5  flex-col sm:flex-row align-center gap-4 justify-center lg:justify-start">
             <Link 
       to="/signup"
-      className="px-6 py-2.5 text-sm font-semibold cursor-pointer text-white bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] rounded-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-[#4DA5AD]/30 inline-block text-center"
+      className="p-4  md:px-6 py-2.5 text-sm font-semibold cursor-pointer text-white bg-gradient-to-r from-[#4DA5AD] to-[#2D4A6B] rounded-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-[#4DA5AD]/30 inline-block text-center"
     >
       Get Started
     </Link>
@@ -83,19 +155,19 @@ const LandingPage = () => {
             </div>
 
             {/* Stats */}
-            <div className="flex items-center justify-center lg:justify-start gap-8 mt-12">
+            <div className="flex items-center justify-center lg:justify-start gap-3 md:gap-8 mt-12">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#2D4A6B]">500+</div>
+                <div className="text-xl md:text-3xl font-bold text-[#2D4A6B]">50+</div>
                 <div className="text-sm text-slate-500">Engineering Teams</div>
               </div>
               <div className="h-8 w-px bg-slate-200"></div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#2D4A6B]">95%</div>
-                <div className="text-sm text-slate-500">On-time Delivery</div>
+                <div className="text-xl md:text-3xl font-bold text-[#2D4A6B]">75%</div>
+                <div className="text-[10px] md:text-sm text-slate-500">On-time Delivery</div>
               </div>
               <div className="h-8 w-px bg-slate-200"></div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#2D4A6B]">24/7</div>
+                <div className="text-xl md:text-3xl font-bold text-[#2D4A6B]">24/7</div>
                 <div className="text-sm text-slate-500">Support</div>
               </div>
             </div>
@@ -119,24 +191,24 @@ const LandingPage = () => {
                 <div className="relative bg-white/50 backdrop-blur-sm p-6 rounded-t-xl">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                      <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                      <div className="w-2 md:w-3 h-3 rounded-full bg-red-400"></div>
+                      <div className="w-2 md:w-3 h-3 rounded-full bg-yellow-400"></div>
+                      <div className="w-2 md:w-3 h-3 rounded-full bg-green-400"></div>
                       <span className="ml-3 font-semibold text-[#2D4A6B]">Engineering Dashboard</span>
                     </div>
-                    <div className="px-3 py-1 bg-[#4DA5AD]/10 text-[#4DA5AD] text-sm font-medium rounded-full">
+                    <div className="text-xs md:text-sm px-3 py-1 bg-[#4DA5AD]/10 text-[#4DA5AD] font-medium rounded-full">
                       Active Project
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className=" grid grid-cols-2 gap-4 mb-6">
                     <div className="p-4 bg-white/80 rounded-lg border border-slate-100">
                       <div className="text-sm text-slate-500 mb-1">Progress</div>
                       <div className="text-2xl font-bold text-[#2D4A6B]">78%</div>
                     </div>
                     <div className="p-4 bg-white/80 rounded-lg border border-slate-100">
                       <div className="text-sm text-slate-500 mb-1">Tasks</div>
-                      <div className="text-2xl font-bold text-[#2D4A6B]">42/54</div>
+                      <div className="text-[1rem] md:text-2xl font-bold text-[#2D4A6B]">42/54</div>
                     </div>
                   </div>
                 </div>
@@ -260,7 +332,7 @@ const LandingPage = () => {
               <span className="text-sm font-bold uppercase tracking-widest text-[#4DA5AD]">Solutions</span>
               <span className="h-px w-8 bg-[#4DA5AD]"></span>
             </div>
-            <h2 className="text-4xl font-black text-[#2D4A6B] mb-6">Standardize Your Engineering Workflow</h2>
+            <h2 className="text-2xl md:text-4xl font-black text-[#2D4A6B] mb-6">Standardize Your Engineering Workflow</h2>
             <p className="text-lg text-slate-600 mb-8 leading-relaxed">
               Replace manual tools like Excel sheets, paper-based tracking, and messy communication apps 
               with a unified digital platform designed specifically for engineering organizations.
