@@ -24,8 +24,9 @@ export const env = {
     ? parseOrigins(process.env.ALLOWED_ORIGINS || "")
     : defaultAllowedOrigins,
   cookieSecure:
-    process.env.COOKIE_SECURE === "true" ||
-    process.env.NODE_ENV === "production",
+    process.env.COOKIE_SECURE !== undefined
+      ? process.env.COOKIE_SECURE === "true"
+      : process.env.NODE_ENV === "production",
 };
 
 export const assertRequiredEnv = () => {
